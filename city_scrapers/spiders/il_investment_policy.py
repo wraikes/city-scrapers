@@ -1,7 +1,7 @@
 from city_scrapers_core.constants import BOARD
 from city_scrapers_core.items import Meeting
 from city_scrapers_core.spiders import CityScrapersSpider
-
+from datetime import datetime
 
 class IlInvestmentPolicySpider(CityScrapersSpider):
     name = "il_investment_policy"
@@ -20,12 +20,12 @@ class IlInvestmentPolicySpider(CityScrapersSpider):
         for item in response.css(".meetings"):
             meeting = Meeting(
                 title=self._parse_title(item),
-                description=self._parse_description(item),
-                classification=self._parse_classification(item),
+                description='',
+                classification=BOARD,
                 start=self._parse_start(item),
-                end=self._parse_end(item),
-                all_day=self._parse_all_day(item),
-                time_notes=self._parse_time_notes(item),
+                end=None,
+                all_day=False,
+                time_notes=None,
                 location=self._parse_location(item),
                 links=self._parse_links(item),
                 source=self._parse_source(response),
@@ -40,29 +40,17 @@ class IlInvestmentPolicySpider(CityScrapersSpider):
         """Parse or generate meeting title.""" 
         return ""
 
-    def _parse_description(self, item):
-        """Parse or generate meeting description."""
-        return ""
-
-    def _parse_classification(self, item):
-        """Parse or generate classification from allowed options."""
-        return BOARD
-
-    def _parse_start(self, item):
-        """Parse start datetime as a naive datetime object."""
-        return None
-
-    def _parse_end(self, item):
-        """Parse end datetime as a naive datetime object. Added by pipeline if None"""
-        return None
-
-    def _parse_time_notes(self, item):
-        """Parse any additional notes on the timing of the meeting"""
-        return ""
-
-    def _parse_all_day(self, item):
-        """Parse or generate all-day status. Defaults to False."""
-        return False
+    def _parse_start(self, item): 
+        """
+        Parse start datetime as a naive datetime object.
+        Function will pull all relevant dates, and return the next available 
+        date after current datetime.
+        """
+        str_dates = response.css('ul.list-unstyled > li::text').getall()
+        dates = [datetime.strptime(x.strip(), '%m/%d/%y') for x in str_dates]
+        next_date = min([x for x in dates if x > datetime.now()])
+        
+        return next_date
 
     def _parse_location(self, item):
         """Parse or generate location."""
