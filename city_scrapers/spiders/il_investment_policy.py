@@ -17,7 +17,7 @@ class IlInvestmentPolicySpider(CityScrapersSpider):
         Change the `_parse_title`, `_parse_start`, etc methods to fit your scraping
         needs.
         """
-        for item in response.css(".meetings"):
+        for item in response.css(".soi-article-content"):
             meeting = Meeting(
                 title=self._parse_title(item),
                 description='',
@@ -46,7 +46,7 @@ class IlInvestmentPolicySpider(CityScrapersSpider):
         Function will pull all relevant dates, and return the next available 
         date after current datetime.
         """
-        str_dates = response.css('ul.list-unstyled > li::text').getall()
+        str_dates = item.css('ul.list-unstyled > li::text').getall()
         dates = [datetime.strptime(x.strip(), '%m/%d/%y') for x in str_dates]
         next_date = min([x for x in dates if x > datetime.now()])
         
